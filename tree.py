@@ -4,12 +4,13 @@ import pandas as pd
 
 
 class Node:
-    def __init__(self, R, S):
+    def __init__(self, R, S, depth):
         self.children = {}
         self.R = R  # Remaining attributes
         self.S = S  # Indices of data points
         self.decidingAttribute = None
         self.leafClass = None
+        self.depth = depth
 
 
 class DecisionTreeClassifier:
@@ -17,11 +18,15 @@ class DecisionTreeClassifier:
         self.root = None
         self.X = None
         self.Y = None
+        self.maxDepth = None
 
-    def fit(self, X, Y):
+    def fit(self, X, Y, maxDepth=-1):
         self.X = X.reset_index(drop=True)
         self.Y = Y.reset_index(drop=True)
-        self.root = Node(X.columns, [i for i in range(0, len(X))])
+        self.maxDepth = maxDepth
+        if maxDepth == -1:
+            self.maxDepth = len(X.columns) + 1
+        self.root = Node(X.columns, [i for i in range(0, len(X))], 1)
         self.__id3__(self.root)
 
     def __id3__(self, node):
@@ -32,7 +37,7 @@ class DecisionTreeClassifier:
         if len(pointsY.unique()) == 1:
             node.leafClass = pointsY.iloc[0]
             return
-        if len(node.R) == 0:
+        if len(node.R) == 0 or node.depth >= self.maxDepth:
             node.leafClass = pointsY.mode().iloc[0]
             return
         maxGain = ('', -1000)
@@ -44,8 +49,7 @@ class DecisionTreeClassifier:
         attributeValues = pointsX[node.decidingAttribute].unique()
         for attributeVal in attributeValues:
             attrValuePointsX = pointsX.loc[pointsX[node.decidingAttribute] == attributeVal]
-            node.children[attributeVal] = Node([n for n in node.R if n != node.decidingAttribute],
-                                               copy.deepcopy(attrValuePointsX.index))
+            node.children[attributeVal] = Node([n for n in node.R if n != node.decidingAttribute], copy.deepcopy(attrValuePointsX.index), node.depth+1)
             self.__id3__(node.children[attributeVal])
 
     @staticmethod
@@ -69,6 +73,10 @@ class DecisionTreeClassifier:
                 if node.leafClass is not None:
                     predictions.append(node.leafClass)
                     break
+                if x.loc[node.decidingAttribute] not in node.children: # Faced attribute value that wasn't present in training set
+                    pointsY = self.Y.iloc[node.S]
+                    predictions.append(pointsY.mode().iloc[0])
+                    break
                 node = node.children[x.loc[node.decidingAttribute]]
         return pd.Series(predictions)
 
@@ -85,5 +93,5 @@ if __name__ == '__main__':
     data = pd.read_csv("data.csv")
     data = data.sample(frac=1).reset_index(drop=True)
     model = DecisionTreeClassifier()
-    model.fit(data.iloc[:2000, :-1], data.iloc[:2000, -1])
-    model.evaluate(data.iloc[2000:, :-1], data.iloc[2000:, -1])
+    model.fit(data.iloc[:3000, :-1], data.iloc[:3000, -1], maxDepth=1)
+    model.evaluate(data.iloc[3000:, :-1], data.iloc[3000:, -1])
