@@ -45,7 +45,6 @@ class DecisionTreeClassifier:
             if inf_gain > max_gain[1]:
                 max_gain = (attribute, inf_gain)
         node.deciding_attribute = max_gain[0]
-        print(node.deciding_attribute)
         attribute_values = points_X[node.deciding_attribute].unique()
         for attribute_val in attribute_values:
             attr_value_points_X = points_X.loc[points_X[node.deciding_attribute] == attribute_val]
