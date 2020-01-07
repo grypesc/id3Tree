@@ -88,7 +88,7 @@ class DecisionTreeClassifier:
 
 
 if __name__ == '__main__':
-    data = pd.read_csv("data.csv")
+    data = pd.read_csv("data/data.csv")
     data = data.sample(frac=1).reset_index(drop=True)
     model = DecisionTreeClassifier()
     model.fit(data.iloc[:3000, :-1], data.iloc[:3000, -1], max_depth=-1)

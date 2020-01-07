@@ -12,8 +12,8 @@ K_VAL = 5
 MAX_DEPTH = 3
 
 if __name__ == '__main__':
-    df = pd.read_csv("sampled_data.csv")
-    length =df.shape[0]
+    df = pd.read_csv("data/sampled_data.csv")
+    length = df.shape[0]
     k_valid = [int((k*length)/K_VAL) for k in range(K_VAL+1)]
     id3TN, id3FP, id3FN, id3TP = 0, 0, 0, 0
     for k in range(K_VAL):
@@ -32,11 +32,11 @@ if __name__ == '__main__':
         # plt.ylabel('True label')
         # plt.xlabel('Predicted label')
         # plt.show()
-    category = list(df.columns[:-1])
+    categories = list(df.columns[:-1])
     encoder = OneHotEncoder(sparse=False)
-    encoded = encoder.fit_transform(df[category])
+    encoded = encoder.fit_transform(df[categories])
     train_ohe = pd.DataFrame(encoded, columns=np.hstack(encoder.categories_))
-    train_df = pd.concat((df.iloc[:,:-1], train_ohe), axis=1).drop(category, axis=1)
+    train_df = pd.concat((df.iloc[:,:-1], train_ohe), axis=1).drop(categories, axis=1)
     estTN, estFP, estFN, estTP = 0, 0, 0, 0
     for k in range(K_VAL):
         estimator = Id3Estimator(max_depth=MAX_DEPTH-1)
