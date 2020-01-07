@@ -3,16 +3,6 @@ import numpy as np
 import pandas as pd
 
 
-class Node:
-    def __init__(self, R, S, depth):
-        self.children = {}
-        self.R = R  # Remaining attributes
-        self.S = S  # Indices of data points
-        self.deciding_attribute = None
-        self.leaf_class = None
-        self.depth = depth
-
-
 class DecisionTreeClassifier:
     def __init__(self):
         self.root = None
@@ -20,13 +10,22 @@ class DecisionTreeClassifier:
         self.Y = None
         self.max_depth = None
 
+    class Node:
+        def __init__(self, R, S, depth):
+            self.children = {}
+            self.R = R  # Remaining attributes
+            self.S = S  # Indices of data points
+            self.deciding_attribute = None
+            self.leaf_class = None
+            self.depth = depth
+
     def fit(self, X, Y, max_depth=-1):
         self.X = X.reset_index(drop=True)
         self.Y = Y.reset_index(drop=True)
         self.max_depth = max_depth
         if max_depth == -1:
             self.max_depth = len(X.columns) + 1
-        self.root = Node(X.columns, [i for i in range(0, len(X))], 1)
+        self.root = self.Node(X.columns, [i for i in range(0, len(X))], 1)
         self.__id3__(self.root)
 
     def __id3__(self, node):
@@ -46,10 +45,11 @@ class DecisionTreeClassifier:
             if inf_gain > max_gain[1]:
                 max_gain = (attribute, inf_gain)
         node.deciding_attribute = max_gain[0]
+        print(node.deciding_attribute)
         attribute_values = points_X[node.deciding_attribute].unique()
         for attribute_val in attribute_values:
             attr_value_points_X = points_X.loc[points_X[node.deciding_attribute] == attribute_val]
-            node.children[attribute_val] = Node([n for n in node.R if n != node.deciding_attribute], copy.deepcopy(attr_value_points_X.index), node.depth + 1)
+            node.children[attribute_val] = self.Node([n for n in node.R if n != node.deciding_attribute], copy.deepcopy(attr_value_points_X.index), node.depth + 1)
             self.__id3__(node.children[attribute_val])
 
     @staticmethod
@@ -73,7 +73,7 @@ class DecisionTreeClassifier:
                 if node.leaf_class is not None:
                     predictions.append(node.leaf_class)
                     break
-                if x.loc[node.deciding_attribute] not in node.children:  # Faced attribute value that wasn't present in training set
+                if x.loc[node.deciding_attribute] not in node.children:  # Faced attribute value that wasn't present in a training set
                     points_Y = self.Y.iloc[node.S]
                     predictions.append(points_Y.mode().iloc[0])
                     break
