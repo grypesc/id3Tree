@@ -23,7 +23,7 @@ class DecisionTreeClassifier:
         self.X = X.reset_index(drop=True)
         self.Y = Y.reset_index(drop=True)
         self.max_depth = max_depth
-        if max_depth == -1:
+        if max_depth <= 0:
             self.max_depth = len(X.columns) + 1
         self.root = self.Node(X.columns, [i for i in range(0, len(X))], 1)
         self.__id3__(self.root)
@@ -87,10 +87,21 @@ class DecisionTreeClassifier:
         return accuracy
 
 
+def print_attr(node):
+    if node.deciding_attribute:
+        print(node.deciding_attribute, node.depth)
+    for child in node.children:
+        print_attr(node.children.get(child))
+
+
 if __name__ == '__main__':
     data = pd.read_csv("data/data.csv")
     data = data.sample(frac=1).reset_index(drop=True)
-    model = DecisionTreeClassifier()
-    model.fit(data.iloc[:3000, :-1], data.iloc[:3000, -1], max_depth=-1)
-    acc = model.evaluate(data.iloc[3000:, :-1], data.iloc[3000:, -1])
-    print(acc)
+    for depth in range(10,11):
+        for i in range(1, 9):
+            div = int(data.shape[0]*(i/10))
+            model = DecisionTreeClassifier()
+            model.fit(data.iloc[:div, :-1], data.iloc[:div, -1], max_depth=depth)
+            acc = model.evaluate(data.iloc[div:, :-1], data.iloc[div:, -1])
+            print("depth {:0} train {:1} percent: {:2.2f} accuracy".format(depth, (i*10), acc))
+            print_attr(model.root)
