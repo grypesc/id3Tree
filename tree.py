@@ -97,7 +97,7 @@ def print_attr(node):
 if __name__ == '__main__':
     data = pd.read_csv("data/data.csv")
     data = data.sample(frac=1).reset_index(drop=True)
-    for depth in range(10,11):
+    for depth in range(3,6):
         for i in range(1, 9):
             div = int(data.shape[0]*(i/10))
             model = DecisionTreeClassifier()
