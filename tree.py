@@ -72,7 +72,7 @@ class DecisionTreeClassifier:
                 if node.leaf_class is not None:
                     predictions.append(node.leaf_class)
                     break
-                if x.loc[node.deciding_attribute] not in node.children:  # Faced attribute value that wasn't present in a training set
+                if x.loc[node.deciding_attribute] not in node.children:  # Faced attribute value that wasn't present in a training set, prediction is dominating class
                     points_Y = self.Y.iloc[node.S]
                     predictions.append(points_Y.mode().iloc[0])
                     break
@@ -86,12 +86,11 @@ class DecisionTreeClassifier:
         accuracy = float(len(cmp.loc[cmp == 1])) / len(Y)
         return accuracy
 
-
-def print_attr(node):
-    if node.deciding_attribute:
-        print(node.deciding_attribute, node.depth)
-    for child in node.children:
-        print_attr(node.children.get(child))
+    def print_tree(self, node):
+        if node.deciding_attribute is not None:
+            print(node.deciding_attribute, node.depth)
+            for child in node.children.values():
+                self.print_tree(child)
 
 
 if __name__ == '__main__':
@@ -104,4 +103,10 @@ if __name__ == '__main__':
             model.fit(data.iloc[:div, :-1], data.iloc[:div, -1], max_depth=depth)
             acc = model.evaluate(data.iloc[div:, :-1], data.iloc[div:, -1])
             print("depth {:0} train {:1} percent: {:2.2f} accuracy".format(depth, (i*10), acc))
-            print_attr(model.root)
+            model.print_tree(model.root)
+
+    # model = DecisionTreeClassifier()
+    # model.fit(data.iloc[:, :-1], data.iloc[:, -1])
+    # acc = model.evaluate(data.iloc[:, :-1], data.iloc[:, -1])
+    # print(acc)
+    # model.print_tree(model.root)
