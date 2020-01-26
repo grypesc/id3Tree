@@ -88,25 +88,43 @@ class DecisionTreeClassifier:
 
     def print_tree(self, node):
         if node.deciding_attribute is not None:
-            print(node.deciding_attribute, node.depth)
-            for child in node.children.values():
+            print(node.deciding_attribute, node.depth, node.children.keys())
+            for attr_val, child in node.children.items():
+                print(attr_val)
                 self.print_tree(child)
+        else:
+            print(str(node.leaf_class) + ': ' + str(len(node.S)))
 
 
 if __name__ == '__main__':
+    from sklearn.model_selection import KFold
     data = pd.read_csv("data/data.csv")
     data = data.sample(frac=1).reset_index(drop=True)
-    for depth in range(3,6):
-        for i in range(1, 9):
-            div = int(data.shape[0]*(i/10))
-            model = DecisionTreeClassifier()
-            model.fit(data.iloc[:div, :-1], data.iloc[:div, -1], max_depth=depth)
-            acc = model.evaluate(data.iloc[div:, :-1], data.iloc[div:, -1])
-            print("depth {:0} train {:1} percent: {:2.2f} accuracy".format(depth, (i*10), acc))
-            model.print_tree(model.root)
 
-    # model = DecisionTreeClassifier()
-    # model.fit(data.iloc[:, :-1], data.iloc[:, -1])
-    # acc = model.evaluate(data.iloc[:, :-1], data.iloc[:, -1])
-    # print(acc)
-    # model.print_tree(model.root)
+    clf = DecisionTreeClassifier()
+    clf.fit(data.iloc[:,:-1], data.iloc[:,-1])
+    clf.print_tree(clf.root)
+
+    print("Our id3 tree: ")
+    for train_index, test_index in KFold(n_splits=5).split(data):
+        X_train, X_test = data.iloc[train_index, :-1], data.iloc[test_index, :-1]
+        y_train, y_test = data.iloc[train_index, -1], data.iloc[test_index, -1]
+        clf = DecisionTreeClassifier()
+        clf.fit(X_train, y_train)
+        print('Train acc: ' + str(clf.evaluate(X_train, y_train)))
+        print('Test acc: ' + str(clf.evaluate(X_test, y_test)))
+
+    from sklearn.preprocessing import OneHotEncoder
+    from sklearn import tree
+
+    data = data.to_numpy()
+    dataOneHot = OneHotEncoder(handle_unknown='ignore', sparse=False).fit_transform(data)
+
+    print("Scikit-learn Cart tree:")
+    for train_index, test_index in KFold(n_splits=5).split(dataOneHot):
+        X_train, X_test = dataOneHot[train_index, :-2], dataOneHot[test_index, :-2]
+        y_train, y_test = dataOneHot[train_index, -2:], dataOneHot[test_index, -2:]
+        clf = tree.DecisionTreeClassifier()
+        clf = clf.fit(X_train, y_train)
+        print('Train acc: ' + str(clf.score(X_train, y_train)))
+        print('Test acc: ' + str(clf.score(X_test, y_test)))

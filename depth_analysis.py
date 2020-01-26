@@ -65,7 +65,6 @@ if __name__ == '__main__':
         estTP += tp
         # to print confusion matrix for every single k uncomment following line
         # print_plot([tn, fp, fn, tp])
-    print("K_VAL="+str(K_VAL)+" MAX_DEPTH="+str(MAX_DEPTH)+"\nCM|our|est\nTN|"+str(id3TN/K_VAL)+","+str(estTN/K_VAL)+"\nFP|"+str(id3FP/K_VAL)+","+str(estFP/K_VAL)+"\nFN|"+str(id3FN/K_VAL)+","+str(estFN/K_VAL)+"\nTP|"+str(id3TP/K_VAL)+","+str(estTP/K_VAL))
-    print_plot([estTN/K_VAL, estFP/K_VAL, estFN/K_VAL, estTP/K_VAL])
-    print_plot([id3TN/K_VAL, id3FP/K_VAL, id3FN/K_VAL, id3TP/K_VAL])
-
+    print("K_VAL="+str(K_VAL)+" MAX_DEPTH="+str(MAX_DEPTH)+"\nCM|our|est\nTN|"+str(id3TN)+","+str(estTN)+"\nFP|"+str(id3FP)+","+str(estFP)+"\nFN|"+str(id3FN)+","+str(estFN)+"\nTP|"+str(id3TP)+","+str(estTP))
+    print_plot([estTN, estFP, estFN, estTP])
+    print_plot([id3TN, id3FP, id3FN, id3TP])
